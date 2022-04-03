@@ -32,7 +32,7 @@ class ClothingSegmenter(Executor):
     def _reshape_docs(self, docs: DocumentArray) -> None:
         """Reshape Jina docs to the correct shape"""
         for doc in docs:
-            doc.set_image_blob_shape(self.SHAPE)
+            doc.set_image_tensor_shape(self.SHAPE)
 
     @staticmethod
     def _docs_to_images(docs: DocumentArray):
