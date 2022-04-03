@@ -25,13 +25,13 @@ logging.basicConfig(format='%(asctime)s [%(levelname)-8s] [%(name)-4s] :: %(mess
 
 @click.command()
 @click.option('--model-path', type=str, default=None, help='The path to the pre-trained U2NET model')
-@click.option('--input-dir', type=str, default='./input', help='The input data root directory')
-@click.option('--output-dir', type=str, default='./output', help='The output data root directory')
+@click.option('--input-dir', type=str, default='/home/ubuntu/executor_ics/input', help='The input data root directory')
+@click.option('--output-dir', type=str, default='/home/ubuntu/executor_ics/output', help='The output data root directory')
 @click.option('--batch-size', type=int, default=4, help='Processing batch size')
 def run(
     model_path: Optional[str] = None,
-    input_dir: str = './input',
-    output_dir: str = './output',
+    input_dir: str = '/home/ubuntu/executor_ics/input',
+    output_dir: str = '/home/ubuntu/executor_ics/output',
     batch_size: int = 4,
 ):
     """Run the image segmentation executor on an image dataset ✨"""
@@ -58,23 +58,24 @@ def run(
     for root, _, fnames in os.walk(input_dir):
         for fname in fnames:
             doc = Document(id=fname, uri=os.path.join(root, fname))
-            doc.convert_uri_to_image_blob()
+            doc.load_uri_to_image_tensor()
             docs.append(doc)
 
     logging.debug(f'Found {len(docs)} images!')
 
     logging.info('Configuring output ...')
     if os.path.exists(output_dir):
-        logging.critical(f'File/directory {output_dir} already exists')
-        sys.exit(1)
-
-    os.makedirs(output_dir)
+        logging.warning(f'File/directory {output_dir} already exists')
+    else:
+        os.makedirs(output_dir)
 
     logging.info('Running the executor ...')
-    docs = executor.segment(docs)
+    docs:DocumentArray = executor.segment(docs)
 
     for doc in docs:
-        doc.dump_image_blob_to_file(os.path.join(output_dir, doc.id))
+        doc.save_image_tensor_to_file(os.path.join(output_dir, doc.id))
+
+
 
 
 if __name__ == '__main__':
