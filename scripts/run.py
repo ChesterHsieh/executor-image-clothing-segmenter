@@ -70,7 +70,7 @@ def run(
         os.makedirs(output_dir)
 
     logging.info('Running the executor ...')
-    docs:DocumentArray = executor.segment(docs)
+    docs = executor.segment(docs)
 
     for doc in docs:
         doc.save_image_tensor_to_file(os.path.join(output_dir, doc.id))

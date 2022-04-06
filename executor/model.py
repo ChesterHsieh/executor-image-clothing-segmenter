@@ -11,6 +11,7 @@ from typing import List, TypeVar, Optional
 
 from .utils import load_checkpoint_mgpu, NormalizeImage
 from .u2net import U2NET
+from jina import Document, DocumentArray
 
 
 PillowImage = TypeVar("PillowImage")
@@ -85,7 +86,7 @@ class ClothingSegmentationModel:
             merged.append(Image.fromarray(cv2.bitwise_and(cv2img, _mask)))
         return merged
 
-    def segment(self, images: List[PillowImage]) -> List[PillowImage]:
+    def segment(self, docs: DocumentArray) -> List[PillowImage]:
         """Segment images"""
         preprocessed = self.preprocess(images)
         x = self.transform(preprocessed)

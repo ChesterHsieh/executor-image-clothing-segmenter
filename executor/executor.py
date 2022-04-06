@@ -29,21 +29,23 @@ class ClothingSegmenter(Executor):
         self._model = ClothingSegmentationModel(model_path=model_path)
         self._batch_size = batch_size
 
+
     def _reshape_docs(self, docs: DocumentArray) -> None:
         """Reshape Jina docs to the correct shape"""
         for doc in docs:
             doc.set_image_tensor_shape(self.SHAPE)
+        return docs
 
-    @staticmethod
-    def _docs_to_images(docs: DocumentArray):
-        """Convert Jina docs to Pillow images"""
-        return [Image.fromarray(doc.blob) for doc in docs]
+    # @staticmethod
+    # def _docs_to_images(docs: DocumentArray):
+    #     """Convert Jina docs to Pillow images"""
+    #     return [Image.fromarray(doc.blob) for doc in docs]
 
-    @staticmethod
-    def _generate_batches(sequence: Sequence[Any], size: int) -> Iterator[Any]:
-        """Generate batches of length 'size' from a sequence"""
-        iterable: Iterator[Any] = iter(sequence)
-        return iter(lambda: list(itertools.islice(iterable, size)), [])
+    # @staticmethod
+    # def _generate_batches(sequence: Sequence[Any], size: int) -> Iterator[Any]:
+    #     """Generate batches of length 'size' from a sequence"""
+    #     iterable: Iterator[Any] = iter(sequence)
+    #     return iter(lambda: list(itertools.islice(iterable, size)), [])
 
     @staticmethod
     def _update_blobs(docs: DocumentArray, images: List[PillowImage]) -> None:
@@ -54,9 +56,8 @@ class ClothingSegmenter(Executor):
     @requests
     def segment(self, docs: DocumentArray, **_) -> Optional[DocumentArray]:
         """Run segmentation"""
-        for batch in self._generate_batches(docs, self._batch_size):
+        for batch in docs.batch(self._batch_size):
             self._reshape_docs(batch)
-            images = self._docs_to_images(batch)
-            segmented = self._model.segment(images)
+            segmented = self._model.segment(batch_docs)
             self._update_blobs(batch, segmented)
         return docs
